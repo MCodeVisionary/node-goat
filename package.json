@@ -38,7 +38,7 @@
     "forever": "^2.0.0",
     "helmet": "^2.0.0",
     "marked": "0.3.5",
-    "mongodb": "^2.1.18",
+    "mongodb": "^3.1.13",
     "needle": "2.2.4",
     "node-esapi": "0.0.1",
     "serve-favicon": "^2.3.0",
@@ -61,5 +61,22 @@
     "cy:verify": "cypress verify"
   },
   "repository": "https://github.com/OWASP/NodejsGoat",
-  "license": "Apache 2.0"
+  "license": "Apache 2.0",
+  "bundleDependencies": [
+    "bcrypt-nodejs",
+    "body-parser",
+    "consolidate",
+    "csurf",
+    "dont-sniff-mimetype",
+    "express",
+    "express-session",
+    "forever",
+    "helmet",
+    "marked",
+    "mongodb",
+    "needle",
+    "node-esapi",
+    "serve-favicon",
+    "underscore"
+  ]
 }
