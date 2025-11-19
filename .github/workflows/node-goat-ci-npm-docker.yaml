@@ -1,4 +1,4 @@
-name: node-goat-ci-npm-docker
+name: mpate-node-goat-ci-npm-docker
 
 on:
   push:
@@ -45,14 +45,13 @@ jobs:
         uses: actions/setup-node@v4
         with: 
           node-version: ${{ env.NODE_DEFAULT_VERSION }}
-      - name: JFrog CLI setup 🐸
+      - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@v4
+        id: setup-cli
         env:
-          JF_URL: https://${{ vars.JF_URL }}/
-          JF_PROJECT: ${{ vars.JF_PROJECT }}
+         JF_URL: ${{ vars.JF_URL }}
         with:
-          oidc-provider-name: jf-github-rk 
-          oidc-audience: https://github.com/rkfrog
+         oidc-provider-name: mpatel-jfrog-githuboidc 
       - name: Health check JFrog Artifactory instance 🐸
         run: |
           jf --version
