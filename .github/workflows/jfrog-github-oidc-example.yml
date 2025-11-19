@@ -11,7 +11,7 @@ env:
   NODE_VERSION: "20" # Node version to use
   JOB_SUMMARY: true
   JFROG_CLI_LOG_LEVEL: DEBUG # DEBUG, INFO, WARN, ERROR
-  RT_REPO_NPM_VIRTUAL: "lab110-npm-virtual"
+  RT_REPO_NPM_VIRTUAL: "alpha-npm-virtual"
   
 jobs:
   npm-docker-build-and-publish-dev:
