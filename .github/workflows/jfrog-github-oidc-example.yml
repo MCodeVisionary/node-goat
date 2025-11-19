@@ -14,11 +14,11 @@ env:
   RT_REPO_NPM_VIRTUAL: "lab110-npm-virtual"
   
 jobs:
-  npmPackage:
+  npm-docker-build-and-publish-dev:
     name: "NPM Package"
     runs-on: ubuntu-latest  # node:22-alpine
     env: 
-      BUILD_NAME: "lab110-npm-node-goat"
+      BUILD_NAME: "mpate-node-goat-template"
       BUILD_ID: "ga-npm-${{github.run_number}}"
 
          
