@@ -1,4 +1,4 @@
-name: mpate-node-goat-ci-npm-docker
+name: remove-node-goat-ci-npm-docker
 
 on:
   push:
