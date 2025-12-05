@@ -11,9 +11,12 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read # for detecting the Github Actions environment.
+  id-token: write # for creating OIDC tokens for signing.
+  packages: write # for uploading attestations.
+  security-events: write # Required for uploading code scanning.
   pull-requests: write
   contents: write
-  security-events: write
 
 jobs:
   frogbot-scan:
