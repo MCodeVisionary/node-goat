@@ -70,9 +70,9 @@ jobs:
       # 2. Uncomment this step to enable npm registry configuration
       # 3. The step will configure npm to use the lab110-npm-virtual repository
       #
-      # - name: "Config npm registry with JFrog CLI"
-      #   run: |
-      #     jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
+      - name: "Config npm registry with JFrog CLI"
+        run: |
+          jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
 
       # TODO: Lab 2.2 - Step 2 - Run JFrog Curation Audit
       # NOTE - Uncomment this step to perform JFrog Curation audit
@@ -86,9 +86,9 @@ jobs:
       # 2. Uncomment this step to enable security auditing
       # 3. The audit will run with table format output and 100 threads for efficiency
       #
-      # - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
-      #   run: |
-      #     jf ca --format=table --threads=100
+      - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
+        run: |
+          jf ca --format=table --threads=100
   
       # TODO: Lab 2.3 - Step 3 - Run Depency Audit
       # NOTE - Uncomment this step to perform Xray & Adv. security audit
@@ -102,9 +102,9 @@ jobs:
       # 2. Uncomment this step to enable comprehensive security scanning
       # 3. The scan includes SAST, SCA, secrets detection, and vulnerability analysis
       #
-      # - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
-      #   run: |
-      #     jf audit 
+      - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
+        run: |
+          jf audit 
 
       # TODO: Lab 2.4 - Step 4 - Install npm Dependencies
       # NOTE - Uncomment this step to install npm dependencies
@@ -121,8 +121,7 @@ jobs:
       - name: "Install npm Dependencies"   
         continue-on-error: false
         run: |
-          jf rt ping
-          jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
+          # jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
           jf npm install --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
           # npm install
      
