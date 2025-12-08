@@ -123,8 +123,8 @@ jobs:
         run: |
           jf rt ping
           jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
-          # jf npm install --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
-          npm install
+          jf npm install --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
+          # npm install
      
       # TODO: Lab 2.5 - Step 5 - Publish npm package to Artifactory with BuildInfo
       # NOTE - Uncomment this step to publish npm package
@@ -141,8 +141,8 @@ jobs:
       - name: "Publish npm package"
         continue-on-error: false
         run: |
-          # jf npm publish --module npm-build --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
-          npm publish 
+          jf npm publish --module npm-build --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
+          # npm publish 
       
       # TODO: Lab 2.6 - Step 6 - Collect Environment Variables
       # NOTE - Uncomment this step to collect build environment information
@@ -156,10 +156,10 @@ jobs:
       # 2. Uncomment this step to enable environment collection
       # 3. Environment variables will be captured and stored with the build
       #
-      # - name: "Collect env variables"
-      #   run: |
-      #     jf rt bce ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}}    # BCE (build-collect-env) - Collect environment variables and attach them to a build
-      #     jf rt bag ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}}    # BAG (build-add-git) - Collects VCS information (repository URL, branch, commit ID)
+      - name: "Collect env variables"
+        run: |
+          jf rt bce ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}}    # BCE (build-collect-env) - Collect environment variables and attach them to a build
+          jf rt bag ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}}    # BAG (build-add-git) - Collects VCS information (repository URL, branch, commit ID)
       
       # TODO: Lab 2.7 - Step 7 - Publish Build Information
       # NOTE: Uncomment this step to publish build information
@@ -173,9 +173,9 @@ jobs:
       # 2. Uncomment this step to enable build publishing
       # 3. Complete build information will be published to Artifactory
       #
-      # - name: "Publish BuildInfo"  
-      #   run: |
-      #     jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true   # BP (build-add-git) - To finalize and push build information (dependencies, artifacts, environment variables, etc.) to JFrog
+      - name: "Publish BuildInfo"  
+        run: |
+          jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true   # BP (build-add-git) - To finalize and push build information (dependencies, artifacts, environment variables, etc.) to JFrog
 
       
       # Purpose: This step adds a delay to ensure proper synchronization between
@@ -202,9 +202,9 @@ jobs:
       # 2. Uncomment this step to enable final build scanning
       # 3. The scan will provide comprehensive security analysis of the build
       #
-      # - name: "Build Scan"
-      #   run: |
-      #     jf bs ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --fail=false --format=table --extended-table=true --rescan=false --vuln=true
+      - name: "Build Scan"
+        run: |
+          jf bs ${{env.BUILD_NAME}} ${{env.BUILD_ID}} --fail=false --format=table --extended-table=true --rescan=false --vuln=true
 
       # End Lab 2 #########################################################
     
