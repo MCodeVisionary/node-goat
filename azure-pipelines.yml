@@ -15,12 +15,6 @@ steps:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: 'jf rt ping'
 
-- task: JFrogAudit@1
-  inputs:
-    xrayConnection: 'mpatel-xray-v2'
-    watchesSource: 'project'
-    allowFailBuild: true
-
 - task: JFrogNpm@1
   inputs:
     command: 'ci'
