@@ -25,8 +25,8 @@ steps:
 - task: JFrogNpm@1
   inputs:
     command: 'ci'
-    artifactoryConnection: 'jf-rt-rk'
-    sourceRepo: 'frogs-npm-dev-virtual'
+    artifactoryConnection: 'artifactory-v2'
+    sourceRepo: 'alpha-npm-virtual'
     collectBuildInfo: true
     threads: '1'
     buildName: '$(Build.DefinitionName)'
@@ -37,8 +37,8 @@ steps:
 - task: JFrogNpm@1
   inputs:
     command: 'pack and publish'
-    artifactoryConnection: 'jf-rt-rk'
-    targetRepo: 'frogs-npm-dev-virtual'
+    artifactoryConnection: 'artifactory-v2'
+    targetRepo: 'alpha-npm-virtual'
     collectBuildInfo: true
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
@@ -47,7 +47,7 @@ steps:
 
 - task: JFrogPublishBuildInfo@1
   inputs:
-    artifactoryConnection: 'jf-rt-rk'
+    artifactoryConnection: 'artifactory-v2'
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
     projectKey: 'frogs-us'
