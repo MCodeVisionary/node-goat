@@ -87,9 +87,9 @@ jobs:
       # 2. Uncomment this step to enable security auditing
       # 3. The audit will run with table format output and 100 threads for efficiency
       #
-      # - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
-      #   run: |
-      #     jf ca --format=table --threads=100
+      - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
+        run: |
+          jf ca --format=table --threads=100
   
       # TODO: Lab 2.3 - Step 3 - Run Depency Audit
       # NOTE - Uncomment this step to perform Xray & Adv. security audit
@@ -103,9 +103,9 @@ jobs:
       # 2. Uncomment this step to enable comprehensive security scanning
       # 3. The scan includes SAST, SCA, secrets detection, and vulnerability analysis
       #
-      # - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
-      #   run: |
-      #     jf audit 
+      - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
+        run: |
+          jf audit 
 
       - name: Capture build version
         run: |
