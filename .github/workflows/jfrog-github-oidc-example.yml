@@ -203,7 +203,7 @@ jobs:
       - name: Sign build evidence
         run: |
           echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
-          jf evd create --build-name ${{ env.BUILD_ID }} --build-number ${{ env.BUILD_ID }} \
+          jf evd create --build-name ${{ env.BUILD_NAME}} --build-number ${{ env.BUILD_ID }} \
             --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 \
             --key "${{ secrets.JF_EVD_PRIVATE_KEY }}"  --key-alias evd-signing-mpatel
           echo '🔎 Evidence attached: `build-signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
