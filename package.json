@@ -6,7 +6,7 @@
   "main": "server.js",
   "bundledDependencies": true,
   "devDependencies": {
-    "async": "^2.0.0-rc.4",
+    "async": "^3.2.6",
     "cross-env": "^7.0.2",
     "cypress": "^3.3.1",
     "grunt": "^1.0.3",
