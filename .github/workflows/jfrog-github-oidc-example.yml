@@ -176,9 +176,9 @@ jobs:
         env:
           JF_URL: ${{ vars.JF_URL }}
           NPM_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
-      # - name: JFrog docker image scan 🐳🐸
-      #   run: |
-      #     jf docker scan soleng.jfrog.io/$DOCKER_JF_RT_REPO/node-goat:${{ env.BUILD_ID }} --format json --threads 6
+      - name: JFrog docker image scan 🐳🐸
+        run: |
+          jf docker scan soleng.jfrog.io/$DOCKER_JF_RT_REPO/node-goat:${{ env.BUILD_ID }} --format json --threads 20
       - name: Docker Push 🐳🐸
         run: |
           jf docker push soleng.jfrog.io/$DOCKER_JF_RT_REPO/node-goat:${{ env.BUILD_ID }} --module owasp-node-goat-docker --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }}
