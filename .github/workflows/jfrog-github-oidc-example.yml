@@ -107,6 +107,12 @@ jobs:
       #   run: |
       #     jf audit 
 
+      - name: Capture build version
+        run: |
+          echo "NPM_PACKAGE_BUILD_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
+          echo "NPM_PACKAGE_NAME=$(jq -r .name package.json)" >> $GITHUB_ENV
+
+      
       # TODO: Lab 2.4 - Step 4 - Install npm Dependencies
       # NOTE - Uncomment this step to install npm dependencies
       # 
@@ -142,6 +148,18 @@ jobs:
         run: |
           jf npm publish --module npm-build --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
           # npm publish 
+
+      - name: Evidence Publish for NPM 🐸
+        run: |
+          echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
+          jf evd create \
+            --package-name $NPM_PACKAGE_NAME \
+            --package-version NPM_PACKAGE_BUILD_VERSION \
+            --package-repo-name ${{ env.RT_REPO_NPM_VIRTUAL }}  \
+            --key "${{ secrets.JF_EVD_PRIVATE_KEY }}"  --key-alias evd-signing-mpatel \
+            --predicate ./sign.json 
+            --predicate-type https://jfrog.com/evidence/signature/v1 
+          echo '🔎 NPM build Evidence attached: `signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
       
       # Docker snippet
       - name: Login to JFrog Docker repo
@@ -199,17 +217,17 @@ jobs:
         run: |
           jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true   # BP (build-add-git) - To finalize and push build information (dependencies, artifacts, environment variables, etc.) to JFrog
 
-      - name: Sign build evidence
-        run: |
-          echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
-          jf evd create \
-            --build-name ${{ env.BUILD_NAME }} \
-            --build-number ${{ env.BUILD_ID }} \
-            --predicate ./sign.json \
-            --predicate-type https://jfrog.com/evidence/build-signature/v1 \
-            --key "${{ secrets.JF_EVD_PRIVATE_KEY }}" \
-            --key-alias evd-signing-mpatel
-          echo '🔎 Evidence attached: `build-signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
+      # - name: Sign build evidence
+      #   run: |
+      #     echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
+      #     jf evd create \
+      #       --build-name ${{ env.BUILD_NAME }} \
+      #       --build-number ${{ env.BUILD_ID }} \
+      #       --predicate ./sign.json \
+      #       --predicate-type https://jfrog.com/evidence/build-signature/v1 \
+      #       --key "${{ secrets.JF_EVD_PRIVATE_KEY }}" \
+      #       --key-alias evd-signing-mpatel
+      #     echo '🔎 Evidence attached: `build-signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
       
       # Purpose: This step adds a delay to ensure proper synchronization between
       # build publishing and subsequent operations, particularly important for
