@@ -199,13 +199,16 @@ jobs:
         run: |
           jf rt bp ${{ env.BUILD_NAME}} ${{ env.BUILD_ID}} --detailed-summary=true   # BP (build-add-git) - To finalize and push build information (dependencies, artifacts, environment variables, etc.) to JFrog
 
-
       - name: Sign build evidence
         run: |
           echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
-          jf evd create --build-name ${{ env.BUILD_NAME}} --build-number ${{ env.BUILD_ID }} \
-            --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 \
-            --key "${{ secrets.JF_EVD_PRIVATE_KEY }}"  --key-alias evd-signing-mpatel
+          jf evd create \
+            --build-name ${{ env.BUILD_NAME }} \
+            --build-number ${{ env.BUILD_ID }} \
+            --predicate ./sign.json \
+            --predicate-type https://jfrog.com/evidence/build-signature/v1 \
+            --key "${{ secrets.JF_EVD_PRIVATE_KEY }}" \
+            --key-alias evd-signing-mpatel
           echo '🔎 Evidence attached: `build-signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
       
       # Purpose: This step adds a delay to ensure proper synchronization between
