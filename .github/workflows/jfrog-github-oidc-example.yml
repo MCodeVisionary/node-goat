@@ -122,7 +122,6 @@ jobs:
       - name: "Install npm Dependencies"   
         continue-on-error: false
         run: |
-          # jf npmc --repo-deploy=${{ env.RT_REPO_NPM_VIRTUAL}} --repo-resolve=${{ env.RT_REPO_NPM_VIRTUAL}}
           jf npm install --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
           # npm install
      
@@ -165,7 +164,14 @@ jobs:
       - name: Docker Push 🐳🐸
         run: |
           jf docker push soleng.jfrog.io/$DOCKER_JF_RT_REPO/node-goat:${{ env.BUILD_ID }} --module owasp-node-goat-docker --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }}
-       
+
+      - name: Sign build evidence
+        run: |
+          echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
+          jf evd create --build-name ${{ env.BUILD_ID }} --build-number ${{ env.BUILD_ID }} \
+            --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 \
+            --key "${{ secrets.JF_EVD_PRIVATE_KEY }}"  --key-alias evd-signing-mpatel
+          echo '🔎 Evidence attached: `build-signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
       
       
       # TODO: Lab 2.6 - Step 6 - Collect Environment Variables
