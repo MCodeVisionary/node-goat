@@ -154,7 +154,7 @@ jobs:
           echo '{ "actor": "${{ github.actor }}", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
           jf evd create \
             --package-name $NPM_PACKAGE_NAME \
-            --package-version NPM_PACKAGE_BUILD_VERSION \
+            --package-version $NPM_PACKAGE_BUILD_VERSION \
             --package-repo-name ${{ env.RT_REPO_NPM_VIRTUAL }}  \
             --key "${{ secrets.JF_EVD_PRIVATE_KEY }}"  --key-alias evd-signing-mpatel \
             --predicate ./sign.json \
