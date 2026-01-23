@@ -12,6 +12,7 @@ env:
   JOB_SUMMARY: true
   JFROG_CLI_LOG_LEVEL: DEBUG # DEBUG, INFO, WARN, ERROR
   RT_REPO_NPM_VIRTUAL: "alpha-npm-virtual"
+  DOCKER_JF_RT_REPO: "alpha-docker-virtual"
   
 jobs:
   npm-docker-build-and-publish-dev:
@@ -86,9 +87,9 @@ jobs:
       # 2. Uncomment this step to enable security auditing
       # 3. The audit will run with table format output and 100 threads for efficiency
       #
-      - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
-        run: |
-          jf ca --format=table --threads=100
+      # - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
+      #   run: |
+      #     jf ca --format=table --threads=100
   
       # TODO: Lab 2.3 - Step 3 - Run Depency Audit
       # NOTE - Uncomment this step to perform Xray & Adv. security audit
@@ -102,9 +103,9 @@ jobs:
       # 2. Uncomment this step to enable comprehensive security scanning
       # 3. The scan includes SAST, SCA, secrets detection, and vulnerability analysis
       #
-      - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
-        run: |
-          jf audit 
+      # - name: "Security Audit"  # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security
+      #   run: |
+      #     jf audit 
 
       # TODO: Lab 2.4 - Step 4 - Install npm Dependencies
       # NOTE - Uncomment this step to install npm dependencies
@@ -142,6 +143,30 @@ jobs:
         run: |
           jf npm publish --module npm-build --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
           # npm publish 
+      
+      # Docker snippet
+      - name: Login to JFrog Docker repo
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.JF_URL }}
+          username: ${{ secrets.JF_USERNAME }}
+          password: ${{ secrets.JF_ACCESS_TOKEN }}
+      - name: Docker Build 🐳🐸
+        run: |
+          echo "registry=${{ env.JF_URL }}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/" >> $HOME/.npmrc
+          echo "//soleng.jfrog.io/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/:_authToken=${{ env.NPM_TOKEN }}" >> $HOME/.npmrc
+          jf docker image build --tag soleng.jfrog.io/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --secret id=npmrc,src=$HOME/.npmrc --module docker-build  --build-arg="REGISTRY_URL=soleng.jfrog.io" --build-arg="DOCKER_REPO_NAME=${{ env.DOCKER_JF_RT_REPO }}" --build-arg="NPM_REPO_NAME=${{ env.RT_REPO_NPM_VIRTUAL }}" .
+        env:
+          JF_URL: ${{ vars.JF_URL }}
+          NPM_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+      # - name: JFrog docker image scan 🐳🐸
+      #   run: |
+      #     jf docker scan soleng.jfrog.io/$DOCKER_JF_RT_REPO/node-goat:${{ env.BUILD_ID }} --format json --threads 6
+      - name: Docker Push 🐳🐸
+        run: |
+          jf docker push soleng.jfrog.io/$DOCKER_JF_RT_REPO/node-goat:${{ env.BUILD_ID }} --module owasp-node-goat-docker --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }}
+       
+      
       
       # TODO: Lab 2.6 - Step 6 - Collect Environment Variables
       # NOTE - Uncomment this step to collect build environment information
