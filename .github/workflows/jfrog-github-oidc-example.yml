@@ -157,7 +157,7 @@ jobs:
             --package-version NPM_PACKAGE_BUILD_VERSION \
             --package-repo-name ${{ env.RT_REPO_NPM_VIRTUAL }}  \
             --key "${{ secrets.JF_EVD_PRIVATE_KEY }}"  --key-alias evd-signing-mpatel \
-            --predicate ./sign.json 
+            --predicate ./sign.json \
             --predicate-type https://jfrog.com/evidence/signature/v1 
           echo '🔎 NPM build Evidence attached: `signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
       
