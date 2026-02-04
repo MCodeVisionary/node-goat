@@ -56,23 +56,6 @@ steps:
         "$(Build.DefinitionName)" \
         "$(Build.BuildNumber)"
 
-- task: JfrogCliV2@1
-  inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: |
-      jf rt build-add-env \
-        "$(Build.DefinitionName)" \
-        "$(Build.BuildNumber)" \
-        "AZDO_PIPELINE=$(Build.DefinitionName)"
-      jf rt build-add-env \
-        "$(Build.DefinitionName)" \
-        "$(Build.BuildNumber)" \
-        "AZDO_RUN=$(Build.BuildId)"
-      jf rt build-add-env \
-        "$(Build.DefinitionName)" \
-        "$(Build.BuildNumber)" \
-        "AZDO_PROJECT=$(System.TeamProject)"
-
 - task: CmdLine@2
   inputs:
     script: 'sleep 60'
@@ -85,10 +68,3 @@ steps:
     allowFailBuild: false
     vuln: true
 
-- task: JfrogCliV2@1
-  inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: |
-      jf evd create \
-        --build-name "$(Build.DefinitionName)" \
-        --build-number "$(Build.BuildNumber)"
