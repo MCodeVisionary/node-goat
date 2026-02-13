@@ -1,6 +1,16 @@
 trigger:
 - main
 
+# Set these in Pipeline > Edit > Variables (or here). For Docker base image: FROM $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node:18
+variables:
+  REGISTRY_URL: 'soleng.jfrog.io'          # e.g. your-registry.azurecr.io or artifactory.example.com
+  DOCKER_REPO_NAME: 'alpha-docker-virtual'      # e.g. docker-local or repo name
+  IMAGE_NAME: 'owasp-node-goat'   # image name (no registry prefix)
+  # JFrog Docker push (create a Docker Registry service connection to your JFrog instance)
+  JFROG_DOCKER_REPO: 'alpha-docker-virtual'   # Artifactory Docker repo key (match your GitHub workflow)
+  JFROG_ARTIFACTORY_HOST: 'soleng.jfrog.io'   # e.g. your-instance.jfrog.io (no https) — for tagging before push
+  JFROG_DOCKER_SERVICE_CONNECTION: 'mpatel-artifactory-v2'   # Azure DevOps Docker Registry service connection name for JFrog
+
 pool:
   vmImage: ubuntu-latest
 
@@ -42,6 +52,61 @@ steps:
     buildNumber: '$(Build.BuildNumber)'
     includeEnvVars: true
 
+
+# --- Containerize: build and optionally push Docker image ---
+# Create .npmrc for Dockerfile secret (required for npm ci). Set pipeline variable NPMRC_CONTENT (secret) for private/JFrog registry.
+- task: CmdLine@2
+  displayName: 'Write .npmrc for Docker build secret'
+  inputs:
+    script: |
+      NPMRC_FILE="$(Agent.TempDirectory)/.npmrc"
+      if [ -n "$(NPMRC_CONTENT)" ]; then
+        echo "$(NPMRC_CONTENT)" > "$NPMRC_FILE"
+      else
+        touch "$NPMRC_FILE"
+      fi
+  env:
+    NPMRC_CONTENT: $(NPMRC_CONTENT)
+
+- task: Docker@2
+  displayName: 'Build Docker image'
+  inputs:
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    buildContext: '.'
+    arguments: |
+      --build-arg REGISTRY_URL=$(REGISTRY_URL)
+      --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME)
+      --secret id=npmrc,src=$(Agent.TempDirectory)/.npmrc
+      -t $(IMAGE_NAME):$(Build.BuildNumber)
+      -t $(IMAGE_NAME):latest
+  env:
+    DOCKER_BUILDKIT: 1
+
+# Tag image for JFrog (registry/repo/image:tag) so push goes to the right path
+- task: CmdLine@2
+  displayName: 'Tag Docker image for JFrog'
+  condition: and(succeeded(), ne(variables['JFROG_ARTIFACTORY_HOST'], ''), ne(variables['JFROG_DOCKER_SERVICE_CONNECTION'], ''))
+  inputs:
+    script: |
+      set -e
+      JFROG_IMAGE="$(JFROG_ARTIFACTORY_HOST)/$(JFROG_DOCKER_REPO)/$(IMAGE_NAME)"
+      docker tag $(IMAGE_NAME):$(Build.BuildNumber) "${JFROG_IMAGE}:$(Build.BuildNumber)"
+      docker tag $(IMAGE_NAME):latest "${JFROG_IMAGE}:latest"
+
+# Push to JFrog Artifactory Docker repo (requires Docker Registry service connection to JFrog)
+- task: Docker@2
+  displayName: 'Push Docker image to JFrog'
+  condition: and(succeeded(), ne(variables['JFROG_DOCKER_SERVICE_CONNECTION'], ''))
+  inputs:
+    command: 'push'
+    containerRegistry: '$(JFROG_DOCKER_SERVICE_CONNECTION)'
+    repository: '$(JFROG_DOCKER_REPO)/$(IMAGE_NAME)'
+    tags: |
+      $(Build.BuildNumber)
+      latest
+
+
 - task: JFrogPublishBuildInfo@1
   inputs:
     artifactoryConnection: 'mpatel-artifactory-v2'
@@ -67,4 +132,3 @@ steps:
     buildNumber: '$(Build.BuildNumber)'
     allowFailBuild: false
     vuln: true
-
