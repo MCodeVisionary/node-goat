@@ -48,13 +48,6 @@ steps:
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
 
-- task: JfrogCliV2@1
-  inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: |
-      jf rt build-add-git \
-        "$(Build.DefinitionName)" \
-        "$(Build.BuildNumber)"
 
 - task: JfrogCliV2@1
   inputs:
