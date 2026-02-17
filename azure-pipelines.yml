@@ -56,7 +56,7 @@ steps:
       jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) .
       jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber)
       jf rt bce $(Build.DefinitionName) $(Build.BuildNumber)
-      jf rt bp $(Build.DefinitionName) $(Build.BuildNumber)
+      jf rt bag $(Build.DefinitionName) $(Build.BuildNumber)
 
 
 
@@ -82,8 +82,8 @@ steps:
 #     buildNumber: '$(Build.BuildNumber)'
 #     includeEnvVars: true
 
-# - task: JFrogPublishBuildInfo@1
-#   inputs:
-#     artifactoryConnection: 'mpatel-artifactory-v2'
-#     buildName: '$(Build.DefinitionName)'
-#     buildNumber: '$(Build.BuildNumber)'
+- task: JFrogPublishBuildInfo@1
+  inputs:
+    artifactoryConnection: 'mpatel-artifactory-v2'
+    buildName: '$(Build.DefinitionName)'
+    buildNumber: '$(Build.BuildNumber)'
