@@ -88,24 +88,26 @@ steps:
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
 
+- bash: |
+    cat > sign.json <<EOF
+    {
+      "actor": "$(Build.RequestedFor)",
+      "pipeline": "$(Build.DefinitionName)",
+      "buildNumber": "$(Build.BuildNumber)",
+      "commit": "$(Build.SourceVersion)",
+      "repo": "$(Build.Repository.Name)",
+      "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    }
+    EOF
+
+    cat sign.json
+  displayName: 'Create build signature payload'
+
 - task: JfrogCliV2@1
   displayName: 'sign'
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: |
-      echo '{ "actor": "$(Build.RequestedFor)", "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'" }' > sign.json
-
-      echo '{
-          "actor": "$(Build.RequestedFor)",
-          "pipeline": "$(Build.DefinitionName)",
-          "buildNumber": "$(Build.BuildNumber)",
-          "commit": "$(Build.SourceVersion)",
-          "repo": "$(Build.Repository.Name)",
-          "date": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
-        }' > sign_2.json
-
-      cat sign_2.json
-      
       jf evd create --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber) --predicate='./sign.json ' \
         --predicate-type='https://jfrog.com/evidence/build-signature/v1' \
         --key='asdasd' \
