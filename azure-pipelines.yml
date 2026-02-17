@@ -47,6 +47,15 @@ steps:
     buildNumber: '$(Build.BuildNumber)'
     includeEnvVars: true
 
+- task: JfrogCliV2@1
+  displayName: 'Docker build and Publish'
+  inputs:
+    jfrogPlatformConnection: 'mpatel-platform-v2'
+    command: |
+      jf docker login soleng.jfrog.io
+      jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId) .
+      jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId)
+
 - task: JFrogPublishBuildInfo@1
   inputs:
     artifactoryConnection: 'mpatel-artifactory-v2'
@@ -65,20 +74,13 @@ steps:
 #     allowFailBuild: false
 #     vuln: true
 
-- task: JfrogCliV2@1
-  inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: |
-      jf docker login soleng.jfrog.io
-      jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --tag soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) .
-
-- task: JFrogDocker@1
-  inputs:
-    command: 'Push'
-    artifactoryConnection: 'mpatel-artifactory-v2'
-    imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId)'
-    collectBuildInfo: true
-    buildName: '$(Build.DefinitionName)'
-    buildNumber: '$(Build.BuildNumber)'
-    includeEnvVars: true
+# - task: JFrogDocker@1
+#   inputs:
+#     command: 'Push'
+#     artifactoryConnection: 'mpatel-artifactory-v2'
+#     imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId)'
+#     collectBuildInfo: true
+#     buildName: '$(Build.DefinitionName)'
+#     buildNumber: '$(Build.BuildNumber)'
+#     includeEnvVars: true
 
