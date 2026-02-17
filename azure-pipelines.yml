@@ -54,7 +54,7 @@ steps:
     command: |
       jf docker login soleng.jfrog.io
       jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId) .
-      jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId) --build-name mpate-node-goat-ado  --build-number $(Build.BuildId)
+      jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId) --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildId)
 
 
 # - task: CmdLine@2
