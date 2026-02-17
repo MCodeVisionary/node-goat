@@ -71,6 +71,9 @@ steps:
     repository: 'alpha-docker-virtual'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
+    arguments: |
+      --build-arg REGISTRY_URL=$(REGISTRY_URL)
+      --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME)
 
 
 - task: JFrogDocker@1
