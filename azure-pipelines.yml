@@ -65,13 +65,15 @@ steps:
 #     allowFailBuild: false
 #     vuln: true
 
-- script: |
-    jf docker build \
+- task: JfrogCliV2@1
+  displayName: "JFrog Docker Build"
+  inputs:
+    jfrogPlatformConnection: 'mpatel-platform-v2'
+    command: 'jf docker build \
       --build-arg REGISTRY_URL=$(REGISTRY_URL) \
       --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) \
       -t soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) \
-      .
-  displayName: "JFrog Docker Build"
+      .'
 
 - task: JFrogDocker@1
   inputs:
