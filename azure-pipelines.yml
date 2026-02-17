@@ -66,10 +66,11 @@ steps:
 #     vuln: true
 
 - task: JfrogCliV2@1
-  displayName: "JFrog Docker Build"
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: 'jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --tag soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) .'
+    command: |
+      jf docker login soleng.jfrog.io
+      jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --tag soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) .
 
 - task: JFrogDocker@1
   inputs:
