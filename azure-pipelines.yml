@@ -15,13 +15,14 @@ steps:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: 'jf rt ping'
 
-- task: JFrogAudit@1
-  inputs:
-    xrayConnection: 'mpatel-xray-v2'
-    watchesSource: 'none'
-    licenses: true
+# - task: JFrogAudit@1
+#   inputs:
+#     xrayConnection: 'mpatel-xray-v2'
+#     watchesSource: 'none'
+#     licenses: true
 
 - task: JFrogNpm@1
+  displayName: 'npm install dependencies'
   inputs:
     command: 'install'
     artifactoryConnection: 'mpatel-artifactory-v2'
