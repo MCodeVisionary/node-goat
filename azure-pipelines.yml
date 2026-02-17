@@ -52,10 +52,30 @@ steps:
   inputs:
     script: 'sleep 60'
 
-- task: JFrogBuildScan@1
+# - task: JFrogBuildScan@1
+#   inputs:
+#     xrayConnection: 'mpatel-xray-v2'
+#     buildName: '$(Build.DefinitionName)'
+#     buildNumber: '$(Build.BuildNumber)'
+#     allowFailBuild: false
+#     vuln: true
+
+- task: Docker@2
   inputs:
-    xrayConnection: 'mpatel-xray-v2'
+    containerRegistry: 'soleng_docker_registry'
+    repository: 'alpha-docker-virtual'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+
+
+- task: JFrogDocker@1
+  inputs:
+    command: 'Push'
+    artifactoryConnection: 'mpatel-artifactory-v2'
+    imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat'
+    collectBuildInfo: true
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
-    allowFailBuild: false
-    vuln: true
+    includeEnvVars: true
+    threads: '3'
+    skipLogin: false
