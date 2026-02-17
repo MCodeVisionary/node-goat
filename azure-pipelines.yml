@@ -65,25 +65,21 @@ steps:
 #     allowFailBuild: false
 #     vuln: true
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'soleng_docker_registry'
-    repository: 'alpha-docker-virtual'
-    command: 'buildAndPush'
-    Dockerfile: '**/Dockerfile'
-    arguments: |
-      --build-arg REGISTRY_URL=$(REGISTRY_URL)
-      --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME)
-
+- script: |
+    jf docker build \
+      --build-arg REGISTRY_URL=$(REGISTRY_URL) \
+      --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) \
+      -t soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) \
+      .
+  displayName: "JFrog Docker Build"
 
 - task: JFrogDocker@1
   inputs:
     command: 'Push'
     artifactoryConnection: 'mpatel-artifactory-v2'
-    imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat'
+    imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId)'
     collectBuildInfo: true
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
     includeEnvVars: true
-    threads: '3'
-    skipLogin: false
+
