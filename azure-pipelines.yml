@@ -4,6 +4,10 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
+variables:
+  REGISTRY_URL: soleng.jfrog.io
+  DOCKER_REPO_NAME: alpha-docker-virtual
+
 steps:
 - task: NodeTool@0
   inputs:
