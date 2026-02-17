@@ -71,9 +71,7 @@ steps:
     repository: 'alpha-docker-virtual'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
-    arguments: |
-      --build-arg REGISTRY_URL=soleng.jfrog.io
-      --build-arg DOCKER_REPO_NAME=alpha-docker-virtual
+
 
 - task: JFrogDocker@1
   inputs:
