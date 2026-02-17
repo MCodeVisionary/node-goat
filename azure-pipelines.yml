@@ -109,24 +109,15 @@ steps:
     
     # Ensure correct permissions
     chmod 600 evidence.key
-
-    # Sign the build evidence
-    jf evd create \
-      --build-name "$(Build.DefinitionName)" \
-      --build-number "$(Build.BuildNumber)" \
-      --predicate ./sign.json \
-      --predicate-type https://jfrog.com/evidence/build-signature/v1 \
-      --key ./evidence.key \
-      --key-alias evd-signing-mpatel
-  displayName: 'Sign build evidence'
+  displayName: 'Get the key'
   env:
     JF_EVD_PRIVATE_KEY: $(JF_EVD_PRIVATE_KEY)
 
-# - task: JfrogCliV2@1
-#   displayName: 'Sign build evidence'
-#   env:
-#     JFROG_CLI_SIGNING_KEY: $(JF_EVD_PRIVATE_KEY)
-#   inputs:
-#     jfrogPlatformConnection: 'mpatel-platform-v2'
-#     command: >
-#       jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key $JF_EVD_PRIVATE_KEY --key-alias evd-signing-mpatel
+- task: JfrogCliV2@1
+  displayName: 'Sign build evidence'
+  env:
+    JFROG_CLI_SIGNING_KEY: $(JF_EVD_PRIVATE_KEY)
+  inputs:
+    jfrogPlatformConnection: 'mpatel-platform-v2'
+    command: >
+      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./evidence.key --key-alias evd-signing-mpatel
