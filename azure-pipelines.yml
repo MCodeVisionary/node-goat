@@ -69,11 +69,10 @@ steps:
   displayName: "JFrog Docker Build"
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: 'jf docker build \
+    command: 'jf docker image build \
       --build-arg REGISTRY_URL=$(REGISTRY_URL) \
       --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) \
-      -t soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) \
-      .'
+      --tag soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId) .'
 
 - task: JFrogDocker@1
   inputs:
