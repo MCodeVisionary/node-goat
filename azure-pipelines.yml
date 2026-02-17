@@ -54,8 +54,7 @@ steps:
     command: |
       jf docker login soleng.jfrog.io
       jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId) .
-
-# jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId)
+      jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildId) --build-name mpate-node-goat-ado  --build-number $(Build.BuildId)
 
 
 # - task: CmdLine@2
@@ -70,15 +69,15 @@ steps:
 #     allowFailBuild: false
 #     vuln: true
 
-- task: JFrogDocker@1
-  inputs:
-    command: 'Push'
-    artifactoryConnection: 'mpatel-artifactory-v2'
-    imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId)'
-    collectBuildInfo: true
-    buildName: '$(Build.DefinitionName)'
-    buildNumber: '$(Build.BuildNumber)'
-    includeEnvVars: true
+# - task: JFrogDocker@1
+#   inputs:
+#     command: 'Push'
+#     artifactoryConnection: 'mpatel-artifactory-v2'
+#     imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId)'
+#     collectBuildInfo: true
+#     buildName: '$(Build.DefinitionName)'
+#     buildNumber: '$(Build.BuildNumber)'
+#     includeEnvVars: true
 
 - task: JFrogPublishBuildInfo@1
   inputs:
