@@ -103,6 +103,15 @@ steps:
     cat sign.json
   displayName: 'Create build signature payload'
 
+- bash: |
+    echo "Writing private key to temporary file..."
+    echo -e "$JF_EVD_PRIVATE_KEY" > private.pem
+    chmod 600 private.pem
+
+    # Validate
+    echo "Validating private key..."
+    openssl rsa -in private.pem -check -noout
+
 - task: JfrogCliV2@1
   displayName: 'Sign build evidence'
   env:
