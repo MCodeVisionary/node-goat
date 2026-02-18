@@ -90,19 +90,20 @@ steps:
 
 
 - bash: |
-    # Use printf to avoid echo adding extra newlines
-    printf "%s" "$JF_EVD_PRIVATE_KEY" | base64 --decode > evidence.key
+    # Using printf ensures no extra characters are added to the stream
+    printf "%s" "$JF_EVD_PRIVATE_KEY_SECRET" | base64 --decode > evidence.key
     
-    # Verify the file starts with the PEM header
-    if head -n 1 evidence.key | grep -q "BEGIN"; then
-      echo "Key restored and appears to be a valid PEM format."
+    # Basic sanity check to ensure the file is PEM formatted
+    if grep -q "BEGIN" evidence.key; then
+      echo "✅ Key restored successfully in PEM format."
+      chmod 600 evidence.key
     else
-      echo "ERROR: Restored file does not look like a PEM key!"
+      echo "❌ Error: Restored file is not a valid PEM key."
       exit 1
     fi
-    chmod 600 evidence.key
   env:
-    JF_EVD_PRIVATE_KEY: $(JF_EVD_PRIVATE_KEY)
+    # Map the secret variable to an env var for the script
+    JF_EVD_PRIVATE_KEY_SECRET: $(JF_EVD_PRIVATE_KEY)
   displayName: "Restore JFrog Evidence private key"
 
 - bash: |
