@@ -103,19 +103,6 @@ steps:
     cat sign.json
   displayName: 'Create build signature payload'
 
-- bash: |
-    cat > private.pem <<'EOF'
-    $(JF_EVD_PRIVATE_KEY)
-    EOF
-
-    chmod 600 private.pem
-
-    # Validate key
-    openssl rsa -in private.pem -check -noout
-  displayName: 'Write private key to file and validate'
-  env:
-    JF_EVD_PRIVATE_KEY: $(JF_EVD_PRIVATE_KEY)
-
 
 - task: JfrogCliV2@1
   displayName: 'Sign build evidence'
@@ -124,4 +111,4 @@ steps:
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: >
-      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./private.pem --key-alias evd-signing-mpatel-ado
+      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key $(JF_EVD_PRIVATE_KEY) --key-alias evd-signing-mpatel-ado
