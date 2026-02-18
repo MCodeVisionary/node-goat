@@ -88,20 +88,6 @@ steps:
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
 
-- bash: |
-    cat > sign.json <<EOF
-    {
-      "actor": "$(Build.RequestedFor)",
-      "pipeline": "$(Build.DefinitionName)",
-      "buildNumber": "$(Build.BuildNumber)",
-      "commit": "$(Build.SourceVersion)",
-      "repo": "$(Build.Repository.Name)",
-      "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    }
-    EOF
-
-    cat sign.json
-  displayName: 'Create build signature payload'
 
 - bash: |
     echo "Restoring private key..."
@@ -115,6 +101,20 @@ steps:
     JF_EVD_PRIVATE_KEY: $(JF_EVD_PRIVATE_KEY)
   displayName: "Restore JFrog Evidence private key"
 
+- bash: |
+    cat > sign.json <<EOF
+    {
+      "actor": "$(Build.RequestedFor)",
+      "pipeline": "$(Build.DefinitionName)",
+      "buildNumber": "$(Build.BuildNumber)",
+      "commit": "$(Build.SourceVersion)",
+      "repo": "$(Build.Repository.Name)",
+      "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    }
+    EOF
+
+    cat ./sign.json
+  displayName: 'Create build signature payload'
 
 - task: JfrogCliV2@1
   displayName: 'Sign build evidence'
