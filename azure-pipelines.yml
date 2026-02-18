@@ -90,13 +90,17 @@ steps:
 
 
 - bash: |
-    echo "Restoring private key..."
-    echo "$JF_EVD_PRIVATE_KEY" | base64 --decode > evidence.key
+    # Use printf to avoid echo adding extra newlines
+    printf "%s" "$JF_EVD_PRIVATE_KEY" | base64 --decode > evidence.key
+    
+    # Verify the file starts with the PEM header
+    if head -n 1 evidence.key | grep -q "BEGIN"; then
+      echo "Key restored and appears to be a valid PEM format."
+    else
+      echo "ERROR: Restored file does not look like a PEM key!"
+      exit 1
+    fi
     chmod 600 evidence.key
-
-    echo "Key restored:"
-    ls -l evidence.key
-    wc -c evidence.key
   env:
     JF_EVD_PRIVATE_KEY: $(JF_EVD_PRIVATE_KEY)
   displayName: "Restore JFrog Evidence private key"
@@ -122,4 +126,3 @@ steps:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: >
       jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./evidence.key --key-alias evd-signing-mpatel-ado
-
