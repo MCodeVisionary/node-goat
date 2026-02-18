@@ -105,10 +105,12 @@ steps:
 
 - bash: |
     # Write PEM key to a temporary file
-    echo "$JF_EVD_PRIVATE_KEY" > evidence.key
+    echo "$JF_EVD_PRIVATE_KEY" > private.pem
     
     # Ensure correct permissions
-    chmod 600 evidence.key
+    chmod 600 private.pem
+
+    openssl rsa -in private.pem -check -noout
   displayName: 'Get the key'
   env:
     JF_EVD_PRIVATE_KEY: $(JF_EVD_PRIVATE_KEY)
@@ -120,4 +122,4 @@ steps:
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: >
-      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key evidence.key --key-alias evd-signing-mpatel-ado
+      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./private.pem --key-alias evd-signing-mpatel-ado
