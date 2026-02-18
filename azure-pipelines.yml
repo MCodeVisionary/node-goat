@@ -121,10 +121,5 @@ steps:
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: >
-      jf evd create \
-        --build-name "$(Build.DefinitionName)" \
-        --build-number "$(Build.BuildNumber)" \
-        --predicate ./sign.json \
-        --predicate-type https://jfrog.com/evidence/build-signature/v1 \
-        --key-alias evd-signing-mpatel-ado
-        --key ./evidence.key
+      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./evidence.key --key-alias evd-signing-mpatel-ado
+
