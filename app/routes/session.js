@@ -3,6 +3,7 @@ const AllocationsDAO = require("../data/allocations-dao").AllocationsDAO;
 const {
     environmentalScripts
 } = require("../../config/config");
+const logger = require("../utils/logger");
 
 /* The SessionHandler must be constructed with a connected db */
 function SessionHandler(db) {
@@ -28,7 +29,7 @@ function SessionHandler(db) {
                return user && user.isAdmin ? next() : res.redirect("/login");
             });
         }
-        console.log("redirecting to login");
+        logger.warn("Unauthenticated admin access, redirecting to login");
         return res.redirect("/login");
 
     };
@@ -37,7 +38,7 @@ function SessionHandler(db) {
         if (req.session.userId) {
             return next();
         }
-        console.log("redirecting to login");
+        logger.warn("Unauthenticated access, redirecting to login");
         return res.redirect("/login");
     };
 
@@ -61,7 +62,7 @@ function SessionHandler(db) {
             const invalidPasswordErrorMessage = "Invalid password";
             if (err) {
                 if (err.noSuchUser) {
-                    console.log("Error: attempt to login with invalid user: ", userName);
+                    logger.warn("Login attempt with invalid username", { userName: userName.replace(/(\r\n|\r|\n)/g, "_") });
 
                     // Fix for A1 - 3 Log Injection - encode/sanitize input for CRLF Injection
                     // that could result in log forging:
@@ -245,7 +246,7 @@ function SessionHandler(db) {
                 });
             });
         } else {
-            console.log("user did not validate");
+            logger.warn("Signup validation failed", { userName });
             return res.render("signup", {
                 ...errors,
                 environmentalScripts
@@ -257,7 +258,7 @@ function SessionHandler(db) {
         let userId;
 
         if (!req.session.userId) {
-            console.log("welcome: Unable to identify user...redirecting to login");
+            logger.warn("Welcome page accessed without session, redirecting to login");
             return res.redirect("/login");
         }
 

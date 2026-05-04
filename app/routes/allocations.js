@@ -2,6 +2,7 @@ const AllocationsDAO = require("../data/allocations-dao").AllocationsDAO;
 const {
     environmentalScripts
 } = require("../../config/config");
+const logger = require("../utils/logger");
 
 function AllocationsHandler(db) {
     "use strict";
@@ -20,6 +21,7 @@ function AllocationsHandler(db) {
             threshold
         } = req.query;
 
+        logger.info("Displaying allocations", { userId, threshold });
         allocationsDAO.getByUserIdAndThreshold(userId, threshold, (err, allocations) => {
             if (err) return next(err);
             return res.render("allocations", {

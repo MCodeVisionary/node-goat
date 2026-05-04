@@ -2,6 +2,7 @@ const ContributionsDAO = require("../data/contributions-dao").ContributionsDAO;
 const {
     environmentalScripts
 } = require("../../config/config");
+const logger = require("../utils/logger");
 
 /* The ContributionsHandler must be constructed with a connected db */
 function ContributionsHandler(db) {
@@ -14,6 +15,7 @@ function ContributionsHandler(db) {
             userId
         } = req.session;
 
+        logger.info("Displaying contributions", { userId });
         contributionsDAO.getByUserId(userId, (error, contrib) => {
             if (error) return next(error);
 
@@ -43,10 +45,12 @@ function ContributionsHandler(db) {
             userId
         } = req.session;
 
+        logger.info("Contributions update requested", { userId });
         //validate contributions
         const validations = [isNaN(preTax), isNaN(afterTax), isNaN(roth), preTax < 0, afterTax < 0, roth < 0];
         const isInvalid = validations.some(validation => validation);
         if (isInvalid) {
+            logger.warn("Invalid contribution values submitted", { userId });
             return res.render("contributions", {
                 updateError: "Invalid contribution percentages",
                 userId,
@@ -55,6 +59,7 @@ function ContributionsHandler(db) {
         }
         // Prevent more than 30% contributions
         if (preTax + afterTax + roth > 30) {
+            logger.warn("Contributions exceed 30% limit", { userId, preTax, afterTax, roth });
             return res.render("contributions", {
                 updateError: "Contribution percentages cannot exceed 30 %",
                 userId,
@@ -66,6 +71,7 @@ function ContributionsHandler(db) {
 
             if (err) return next(err);
 
+            logger.info("Contributions updated successfully", { userId });
             contributions.updateSuccess = true;
             return res.render("contributions", {
                 ...contributions,

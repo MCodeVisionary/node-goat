@@ -3,6 +3,7 @@ const ESAPI = require("node-esapi");
 const {
     environmentalScripts
 } = require("../../config/config");
+const logger = require("../utils/logger");
 
 /* The ProfileHandler must be constructed with a connected db */
 function ProfileHandler(db) {
@@ -15,7 +16,7 @@ function ProfileHandler(db) {
             userId
         } = req.session;
 
-
+        logger.info("Displaying profile", { userId });
 
         profile.getByUserId(parseInt(userId), (err, doc) => {
             if (err) return next(err);
@@ -61,6 +62,7 @@ function ProfileHandler(db) {
         const testComplyWithRequirements = regexPattern.test(bankRouting);
         // if the regex test fails we do not allow saving
         if (testComplyWithRequirements !== true) {
+            logger.warn("Profile update rejected: invalid bank routing number format", { userId: req.session.userId });
             const firstNameSafeString = firstName;
             return res.render("profile", {
                 updateError: "Bank Routing number does not comply with requirements for format specified",
@@ -92,6 +94,7 @@ function ProfileHandler(db) {
 
                 if (err) return next(err);
 
+                logger.info("Profile updated successfully", { userId });
                 // WARN: Applying any sting specific methods here w/o checking type of inputs could lead to DoS by HPP
                 //firstName = firstName.trim();
                 user.updateSuccess = true;

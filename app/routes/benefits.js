@@ -4,6 +4,7 @@ const {
 const {
     environmentalScripts
 } = require("../../config/config");
+const logger = require("../utils/logger");
 
 function BenefitsHandler(db) {
     "use strict";
@@ -12,6 +13,7 @@ function BenefitsHandler(db) {
 
     this.displayBenefits = (req, res, next) => {
 
+        logger.info("Displaying benefits admin page");
         benefitsDAO.getAllNonAdminUsers((error, users) => {
 
             if (error) return next(error);
@@ -32,6 +34,7 @@ function BenefitsHandler(db) {
             benefitStartDate
         } = req.body;
 
+        logger.info("Updating benefits", { userId, benefitStartDate });
         benefitsDAO.updateBenefits(userId, benefitStartDate, (error) => {
 
             if (error) return next(error);
