@@ -89,41 +89,41 @@ steps:
     buildNumber: '$(Build.BuildNumber)'
 
 
-- bash: |
-    # Using printf ensures no extra characters are added to the stream
-    printf "%s" "$JF_EVD_PRIVATE_KEY_SECRET" | base64 --decode > evidence.key
+# - bash: |
+#     # Using printf ensures no extra characters are added to the stream
+#     printf "%s" "$JF_EVD_PRIVATE_KEY_SECRET" | base64 --decode > evidence.key
     
-    # Basic sanity check to ensure the file is PEM formatted
-    if grep -q "BEGIN" evidence.key; then
-      echo "✅ Key restored successfully in PEM format."
-      chmod 600 evidence.key
-    else
-      echo "❌ Error: Restored file is not a valid PEM key."
-      exit 1
-    fi
-  env:
-    # Map the secret variable to an env var for the script
-    JF_EVD_PRIVATE_KEY_SECRET: $(JF_EVD_PRIVATE_KEY)
-  displayName: "Restore JFrog Evidence private key"
+#     # Basic sanity check to ensure the file is PEM formatted
+#     if grep -q "BEGIN" evidence.key; then
+#       echo "✅ Key restored successfully in PEM format."
+#       chmod 600 evidence.key
+#     else
+#       echo "❌ Error: Restored file is not a valid PEM key."
+#       exit 1
+#     fi
+#   env:
+#     # Map the secret variable to an env var for the script
+#     JF_EVD_PRIVATE_KEY_SECRET: $(JF_EVD_PRIVATE_KEY)
+#   displayName: "Restore JFrog Evidence private key"
 
-- bash: |
-    cat > sign.json <<EOF
-    {
-      "actor": "$(Build.RequestedFor)",
-      "pipeline": "$(Build.DefinitionName)",
-      "buildNumber": "$(Build.BuildNumber)",
-      "commit": "$(Build.SourceVersion)",
-      "repo": "$(Build.Repository.Name)",
-      "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-    }
-    EOF
+# - bash: |
+#     cat > sign.json <<EOF
+#     {
+#       "actor": "$(Build.RequestedFor)",
+#       "pipeline": "$(Build.DefinitionName)",
+#       "buildNumber": "$(Build.BuildNumber)",
+#       "commit": "$(Build.SourceVersion)",
+#       "repo": "$(Build.Repository.Name)",
+#       "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+#     }
+#     EOF
 
-    cat ./sign.json
-  displayName: 'Create build signature payload'
+#     cat ./sign.json
+#   displayName: 'Create build signature payload'
 
-- task: JfrogCliV2@1
-  displayName: 'Sign build evidence'
-  inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
-    command: >
-      jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./evidence.key --key-alias evd-signing-mpatel-ado
+# - task: JfrogCliV2@1
+#   displayName: 'Sign build evidence'
+#   inputs:
+#     jfrogPlatformConnection: 'mpatel-platform-v2'
+#     command: >
+#       jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./evidence.key --key-alias evd-signing-mpatel-ado
