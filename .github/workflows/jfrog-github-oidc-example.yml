@@ -8,7 +8,7 @@ permissions:
   contents: read
   security-events: write # Required for uploading code scanning.
 env:
-  NODE_VERSION: "20" # Node version to use
+  NODE_VERSION: "22" # Node version to use
   JOB_SUMMARY: true
   JFROG_CLI_LOG_LEVEL: DEBUG # DEBUG, INFO, WARN, ERROR
   RT_REPO_NPM_VIRTUAL: "alpha-npm-virtual"
@@ -32,6 +32,7 @@ jobs:
         env:
          JF_URL: ${{ vars.JF_URL }}
         with:
+         version: 2.104.1
          oidc-provider-name: mpatel-jfrog-githuboidc
 
       - name: Run JFrog CLI
@@ -89,7 +90,7 @@ jobs:
       #
       - name: "Curation: audit" # https://docs.jfrog-applications.jfrog.io/jfrog-applications/jfrog-cli/cli-for-jfrog-security/cli-for-jfrog-curation
         run: |
-          jf ca --format=table --threads=100
+          jf ca --format=table --threads=100 --run-native
   
       # TODO: Lab 2.3 - Step 3 - Run Depency Audit
       # NOTE - Uncomment this step to perform Xray & Adv. security audit
