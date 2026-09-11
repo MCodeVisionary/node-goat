@@ -1,7 +1,7 @@
 {
   "name": "owasp-node-goat",
   "private": false,
-  "version": "1.67.30",
+  "version": "1.67.32",
   "description": "Learn OWASP for node.js developers.",
   "main": "server.js",
   "bundledDependencies": true,
