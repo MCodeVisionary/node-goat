@@ -9,6 +9,11 @@ module.exports = {
     cryptoKey: "a_secure_key_for_crypto_here",
     cryptoAlgo: "aes256",
     hostName: "localhost",
-    environmentalScripts: []
+    environmentalScripts: [],
+    sendgrid: {
+        apiKey: process.env.SENDGRID_API_KEY || "",
+        fromEmail: "notifications@nodegoat.example.com",
+        toEmail: "test@nodegoat.example.com"
+    }
 };
 
