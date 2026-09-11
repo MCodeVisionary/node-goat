@@ -151,11 +151,25 @@ jobs:
       # 2. Uncomment this step to enable dependency installation
       # 3. The step will install dependencies and associate them with the build
       #
-      - name: "Install npm Dependencies"   
+      # NOTE: `jf npm install` consistently fails here with npm E401 "Incorrect or
+      # missing password" - the OIDC-derived access token that jf CLI writes into
+      # its temporary .npmrc isn't accepted by the registry for actual npm install
+      # requests, even though the same token works fine for jf's own HTTP client
+      # (curation/audit HEAD requests succeed against the same repo). Working
+      # around it by writing a real .npmrc ourselves with the stored JF_ACCESS_TOKEN
+      # secret (same pattern already used below for the Docker build's npmrc) and
+      # running plain npm install. Trade-off: this install is no longer linked to
+      # BUILD_NAME/BUILD_ID for per-package build-info tracking.
+      - name: "Install npm Dependencies"
         continue-on-error: false
+        env:
+          JF_HOST: ${{ secrets.JF_HOST_LATEST }}
+          NPM_TOKEN: ${{ secrets.JF_ACCESS_TOKEN_LATEST }}
         run: |
-          jf npm install --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }} 
-          # npm install
+          echo "registry=https://${JF_HOST}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/" > .npmrc
+          echo "//${JF_HOST}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/:_authToken=${NPM_TOKEN}" >> .npmrc
+          echo "always-auth=true" >> .npmrc
+          npm install
      
       # TODO: Lab 2.5 - Step 5 - Publish npm package to Artifactory with BuildInfo
       # NOTE - Uncomment this step to publish npm package

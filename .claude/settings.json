@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)",
+      "WebSearch",
+      "Bash(git add *)",
+      "Bash(git push *)",
+      "Bash(DISABLE_BOOST=1 gh run list --limit 1 --json databaseId,status,conclusion,headSha,displayTitle)",
+      "Bash(DISABLE_BOOST=1 gh run list --limit 1 --json databaseId,status,conclusion,displayTitle)",
+      "Bash(cat ~/.jfrog/jfrog-cli.conf.v6 2>/dev/null || echo \"no jfrog cli config found\")",
+      "Read(//Users/maharship/.jfrog/**)",
+      "Bash(node -e \"const p = require\\('/Users/maharship/Documents/repos/goats/node-goat/package.json'\\); console.log\\(p.version\\)\")"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "mcodevisionaryorg-remote-mcp",
+    "jf-sast-mcp"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "npm version patch --no-git-tag-version >/dev/null 2>&1 && git add package.json package-lock.json 2>/dev/null || true",
+            "statusMessage": "Bumping version before commit..."
+          }
+        ]
+      }
+    ]
+  }
+}

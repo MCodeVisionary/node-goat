@@ -1,0 +1,93 @@
+{% extends "./layout.html" %} {% block title %}Payment{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-lg-12">
+
+        {% if paymentSuccess %}
+        <div class="alert alert-dismissable alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            Payment of <strong>{{amount}} {{currency}}</strong> processed successfully.
+            <br>Payment ID: <code>{{paymentId}}</code> &mdash; Status: <strong>{{paymentStatus}}</strong>
+        </div>
+        {% endif %}
+
+        {% if paymentError %}
+        <div class="alert alert-dismissable alert-danger">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{paymentError}}
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Make a Payment</h3>
+            </div>
+            <div class="panel-body">
+                <form method="POST" action="/payment" id="payment-form">
+
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="amount" name="amount"
+                                placeholder="0" min="1" required>
+                            <span class="input-group-addon">.00</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currency">Currency</label>
+                        <select class="form-control" id="currency" name="currency">
+                            {% for c in currencies %}
+                            <option value="{{c}}">{{c | upper}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description <small class="text-muted">(optional)</small></label>
+                        <input type="text" class="form-control" id="description" name="description"
+                            placeholder="Payment description">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paymentMethodId">Payment Method ID</label>
+                        <input type="text" class="form-control" id="paymentMethodId" name="paymentMethodId"
+                            placeholder="pm_card_visa (Stripe test token)" required>
+                        <p class="help-block">
+                            Use <code>pm_card_visa</code> for test payments.
+                            In production, collect this via <a href="https://stripe.com/docs/js" target="_blank">Stripe.js Elements</a>.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Payment</button>
+                    <a href="/payment/history" class="btn btn-default">View History</a>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="panel panel-default">
+            <div class="panel-heading"><strong>Test Payment Methods</strong></div>
+            <div class="panel-body">
+                <table class="table table-condensed">
+                    <thead>
+                        <tr><th>Token</th><th>Result</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>pm_card_visa</code></td><td>Success</td></tr>
+                        <tr><td><code>pm_card_visa_debit</code></td><td>Success (debit)</td></tr>
+                        <tr><td><code>pm_card_chargeDeclined</code></td><td>Declined</td></tr>
+                        <tr><td><code>pm_card_insufficientFunds</code></td><td>Insufficient funds</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
