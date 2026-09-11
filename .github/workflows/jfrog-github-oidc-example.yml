@@ -163,12 +163,10 @@ jobs:
       - name: "Install npm Dependencies"
         continue-on-error: false
         env:
-          JF_URL: ${{ vars.JF_URL }}
-          JF_HOST: ${{ secrets.JF_HOST }}
-          NPM_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
+          JF_HOST: ${{ secrets.JF_HOST_LATEST }}
+          NPM_TOKEN: ${{ secrets.JF_ACCESS_TOKEN_LATEST }}
         run: |
-          JF_URL_TRIMMED="${JF_URL%/}"
-          echo "registry=${JF_URL_TRIMMED}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/" > .npmrc
+          echo "registry=https://${JF_HOST}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/" > .npmrc
           echo "//${JF_HOST}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/:_authToken=${NPM_TOKEN}" >> .npmrc
           echo "always-auth=true" >> .npmrc
           npm install
