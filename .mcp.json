@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "mcodevisionaryorg-remote-mcp": {
+      "type": "http",
+      "url": "https://mcodevisionaryorg.jfrog.io/mcp"
+    },
+    "jf-sast-mcp": {
+      "command": "/opt/homebrew/bin/jf",
+      "args": ["source-mcp", "/Users/maharship/Documents/repos/goats/node-goat"]
+    }
+  }
+}

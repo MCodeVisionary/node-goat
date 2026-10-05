@@ -3,6 +3,7 @@ const {
     environmentalScripts
 } = require("../../config/config");
 const logger = require("../utils/logger");
+const { sendMemoNotification } = require("../utils/notification-mailer");
 
 function MemosHandler(db) {
     "use strict";
@@ -14,6 +15,7 @@ function MemosHandler(db) {
         logger.info("Adding memo", { userId: req.session.userId });
         memosDAO.insert(req.body.memo, (err, docs) => {
             if (err) return next(err);
+            sendMemoNotification(req.body.memo);
             this.displayMemos(req, res, next);
         });
     };

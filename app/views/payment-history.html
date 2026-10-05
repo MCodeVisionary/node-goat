@@ -1,0 +1,51 @@
+{% extends "./layout.html" %} {% block title %}Payment History{% endblock %} {% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Payment History</h3>
+            </div>
+            <div class="panel-body">
+
+                {% if payments.length %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Currency</th>
+                                <th>Status</th>
+                                <th>Stripe Payment ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{payment.createdAt}}</td>
+                                <td>{{payment.amount}}.00</td>
+                                <td>{{payment.currency | upper}}</td>
+                                <td>
+                                    {% if payment.status == "succeeded" %}
+                                    <span class="label label-success">{{payment.status}}</span>
+                                    {% else %}
+                                    <span class="label label-warning">{{payment.status}}</span>
+                                    {% endif %}
+                                </td>
+                                <td><code>{{payment.stripePaymentIntentId}}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No payment history found.</p>
+                {% endif %}
+
+                <a href="/payment" class="btn btn-primary">Make a Payment</a>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
