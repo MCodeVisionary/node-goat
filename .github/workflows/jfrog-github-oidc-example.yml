@@ -201,13 +201,15 @@ jobs:
       #       --predicate-type https://jfrog.com/evidence/signature/v1 
       #     echo '🔎 NPM build Evidence attached: `signature` 🔏 ' >> $GITHUB_STEP_SUMMARY
       
-      # Docker snippet
-      - name: Login to JFrog Docker repository
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ vars.JF_URL }}
-          username: ${{ secrets.JF_USERNAME }}
-          password: ${{ secrets.JF_ACCESS_TOKEN }}
+      # Docker snippet (disabled along with the build/scan/push steps below;
+      # re-enable together and renew JF_ACCESS_TOKEN, which currently fails
+      # Docker registry auth with "Token failed verification: signature")
+      # - name: Login to JFrog Docker repository
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ vars.JF_URL }}
+      #     username: ${{ secrets.JF_USERNAME }}
+      #     password: ${{ secrets.JF_ACCESS_TOKEN }}
       # - name: Docker Build 🐳🐸
       #   run: |
       #     echo "registry=${{ env.JF_URL }}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/" >> $HOME/.npmrc
