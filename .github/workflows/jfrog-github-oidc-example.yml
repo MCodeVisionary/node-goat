@@ -211,17 +211,17 @@ jobs:
       - name: Docker Build 🐳🐸
         run: |
           echo "registry=${{ env.JF_URL }}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/" >> $HOME/.npmrc
-          echo "//${{ secrets.JF_HOST }}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/:_authToken=${{ env.NPM_TOKEN }}" >> $HOME/.npmrc
-          jf docker image build --tag ${{ secrets.JF_HOST }}/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --secret id=npmrc,src=$HOME/.npmrc --module docker-build  --build-arg="REGISTRY_URL=${{ secrets.JF_HOST }}" --build-arg="DOCKER_REPO_NAME=${{ env.DOCKER_JF_RT_REPO }}" --build-arg="NPM_REPO_NAME=${{ env.RT_REPO_NPM_VIRTUAL }}" .
+          echo "//${{ vars.JF_HOST }}/artifactory/api/npm/${{ env.RT_REPO_NPM_VIRTUAL }}/:_authToken=${{ env.NPM_TOKEN }}" >> $HOME/.npmrc
+          jf docker image build --tag ${{ vars.JF_HOST }}/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --secret id=npmrc,src=$HOME/.npmrc --module docker-build  --build-arg="REGISTRY_URL=${{ vars.JF_HOST }}" --build-arg="DOCKER_REPO_NAME=${{ env.DOCKER_JF_RT_REPO }}" --build-arg="NPM_REPO_NAME=${{ env.RT_REPO_NPM_VIRTUAL }}" .
         env:
           JF_URL: ${{ vars.JF_URL }}
           NPM_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
       - name: JFrog docker image scan 🐳🐸
         run: |
-          jf docker scan ${{ secrets.JF_HOST }}/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --format json --threads 20
+          jf docker scan ${{ vars.JF_HOST }}/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --format json --threads 20
       - name: Docker Push 🐳🐸
         run: |
-          jf docker push ${{ secrets.JF_HOST }}/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --module owasp-node-goat-docker --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }}
+          jf docker push ${{ vars.JF_HOST }}/${{ env.DOCKER_JF_RT_REPO }}/node-goat:${{ env.BUILD_ID }} --module owasp-node-goat-docker --build-name=${{ env.BUILD_NAME }} --build-number=${{ env.BUILD_ID }}
       
       
       # TODO: Lab 2.6 - Step 6 - Collect Environment Variables
