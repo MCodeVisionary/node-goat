@@ -33,7 +33,7 @@ jobs:
          JF_URL: ${{ vars.JF_URL }}
         with:
          version: 2.104.1
-         oidc-provider-name: mpatel-jfrog-githuboidc
+         oidc-provider-name: github-docportal
 
       - name: Run JFrog CLI
         run: |
