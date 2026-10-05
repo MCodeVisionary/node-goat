@@ -1,7 +1,7 @@
 ARG REGISTRY_URL DOCKER_REPO_NAME
 
 # Base image from 
-FROM ${REGISTRY_URL}/${DOCKER_REPO_NAME}/node:18
+FROM ${REGISTRY_URL}/${DOCKER_REPO_NAME}/node:22-alpine
 
 # Create app directory
 WORKDIR /usr/src/app/
