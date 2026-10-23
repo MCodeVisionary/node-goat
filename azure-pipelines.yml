@@ -15,6 +15,7 @@ steps:
   displayName: 'Install Node.js'
 
 - task: JfrogCliV2@1
+  name: "healthcheck"
   inputs:
     jfrogPlatformConnection: 'mpatel-platform-v2'
     command: 'jf rt ping'
