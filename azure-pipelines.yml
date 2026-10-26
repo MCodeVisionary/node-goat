@@ -129,9 +129,13 @@ steps:
     CURRENT_DOCKER_TAG=$(grep -m1 '^FROM' Dockerfile | sed -E 's#.*/node:([A-Za-z0-9.-]+)$#\1#')
     TODAY=$(date -u +%Y-%m-%d)
 
-    QUERY='{"query":"{ applications { getApplication(key: \"$(APPTRUST_APP_KEY)\") { versionsConnection(first: 50) { edges { node { version tag createdAt @dateFormat(format: ISO8601_DATE_ONLY) } } } } } }"}'
+    QUERY='{"query":"{ applications { getApplication(key: \"$(APPTRUST_APP_KEY)\") { versionsConnection(first: 50) { edges { node { version tag createdAt } } } } } }"}'
     jf api "/onemodel/api/v1/graphql" -X POST -H "Content-Type: application/json" -d "$QUERY" > apptrust-versions.json
 
+    # Sort by the full timestamp (not just the date) - several versions can
+    # share the same calendar day, and a date-only sort can't break those
+    # ties chronologically, so "last" would be arbitrary among same-day
+    # versions instead of the truly most recent one.
     LATEST=$(jq -c '(.data.applications.getApplication.versionsConnection.edges // []) | map(.node) | sort_by(.createdAt) | last // null' apptrust-versions.json)
 
     if [ "$LATEST" = "null" ]; then
@@ -139,7 +143,8 @@ steps:
     else
       LAST_VERSION=$(echo "$LATEST" | jq -r '.version')
       LAST_TAG=$(echo "$LATEST" | jq -r '.tag // ""')
-      LAST_DAY=$(echo "$LATEST" | jq -r '.createdAt')
+      LAST_CREATED=$(echo "$LATEST" | jq -r '.createdAt')
+      LAST_DAY=${LAST_CREATED:0:10}
 
       LAST_NPM=$(echo "$LAST_TAG" | sed -E 's/^npm-(.*)_docker-.*/\1/')
       LAST_DOCKER=$(echo "$LAST_TAG" | sed -E 's/.*_docker-(.*)$/\1/')
