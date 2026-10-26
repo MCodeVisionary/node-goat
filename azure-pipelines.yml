@@ -5,7 +5,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  REGISTRY_URL: soleng.jfrog.io
+  REGISTRY_URL: solenglatest.jfrog.io
   DOCKER_REPO_NAME: alpha-docker-virtual
 
 steps:
@@ -17,7 +17,7 @@ steps:
 - task: JfrogCliV2@1
   name: "healthcheck"
   inputs:
-    jfrogPlatformConnection: 'mpate-solenglatest'
+    jfrogPlatformConnection: 'mpate-solenglatest-platform'
     command: 'jf rt ping'
 
 # - task: JFrogAudit@1
@@ -30,7 +30,7 @@ steps:
   displayName: 'npm install dependencies'
   inputs:
     command: 'install'
-    artifactoryConnection: 'mpate-solenglatest'
+    artifactoryConnection: 'mpate-solenglatest-rt'
     sourceRepo: 'alpha-npm-virtual'
     collectBuildInfo: true
     threads: '1'
