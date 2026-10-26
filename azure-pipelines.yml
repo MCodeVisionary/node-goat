@@ -54,7 +54,10 @@ steps:
     jfrogPlatformConnection: 'mpate-solenglatest-platform'
     command: |
       jf docker login $(REGISTRY_URL)
-      jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) .
+      echo "registry=https://$(REGISTRY_URL)/artifactory/api/npm/alpha-npm-virtual/" > npmrc.secret
+      echo "//$(REGISTRY_URL)/artifactory/api/npm/alpha-npm-virtual/:_authToken=$(oidc_token)" >> npmrc.secret
+      jf docker image build --secret id=npmrc,src=npmrc.secret --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) .
+      rm -f npmrc.secret
       jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber)
       jf rt bce $(Build.DefinitionName) $(Build.BuildNumber)
       jf rt bag $(Build.DefinitionName) $(Build.BuildNumber)
