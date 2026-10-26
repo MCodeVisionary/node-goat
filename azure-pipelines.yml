@@ -41,7 +41,7 @@ steps:
 - task: JFrogNpm@1
   inputs:
     command: 'pack and publish'
-    artifactoryConnection: 'mpatel-artifactory-v2'
+    artifactoryConnection: 'mpate-solenglatest-rt'
     targetRepo: 'alpha-npm-virtual'
     collectBuildInfo: true
     buildName: '$(Build.DefinitionName)'
@@ -51,7 +51,7 @@ steps:
 - task: JfrogCliV2@1
   displayName: 'Docker build and Publish'
   inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
+    jfrogPlatformConnection: 'mpate-solenglatest-platform'
     command: |
       jf docker login soleng.jfrog.io
       jf docker image build --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) .
@@ -85,7 +85,7 @@ steps:
 
 - task: JFrogPublishBuildInfo@1
   inputs:
-    artifactoryConnection: 'mpatel-artifactory-v2'
+    artifactoryConnection: 'mpate-solenglatest-rt'
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
 
