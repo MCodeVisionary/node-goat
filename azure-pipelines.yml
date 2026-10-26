@@ -17,7 +17,7 @@ steps:
 - task: JfrogCliV2@1
   name: "healthcheck"
   inputs:
-    jfrogPlatformConnection: 'mpatel-platform-v2'
+    jfrogPlatformConnection: 'mpate-solenglatest'
     command: 'jf rt ping'
 
 # - task: JFrogAudit@1
@@ -30,7 +30,7 @@ steps:
   displayName: 'npm install dependencies'
   inputs:
     command: 'install'
-    artifactoryConnection: 'mpatel-artifactory-v2'
+    artifactoryConnection: 'mpate-solenglatest'
     sourceRepo: 'alpha-npm-virtual'
     collectBuildInfo: true
     threads: '1'
