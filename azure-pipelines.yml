@@ -198,12 +198,22 @@ steps:
     EOF
   displayName: 'Prepare build provenance predicate'
 
+# EVIDENCE_PRIVATE_KEY must hold the base64 of the PEM private key (single
+# line - see the note below), not the raw multi-line PEM text. JfrogCliV2's
+# command block is parsed line-by-line, so a multi-line secret substituted
+# inline there gets split across "lines" and truncated. Restore the real
+# PEM to a file here instead, then reference that file by path.
+- script: |
+    echo "$(EVIDENCE_PRIVATE_KEY)" | base64 --decode > evidence.key
+    chmod 600 evidence.key
+  displayName: 'Restore evidence signing key'
+
 - task: JfrogCliV2@1
   displayName: 'Attach build-level evidence'
   inputs:
     jfrogPlatformConnection: 'mpate-solenglatest-platform'
     command: |
-      jf evd create --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber) --predicate=build-provenance.json --predicate-type=https://jfrog.com/evidence/build-provenance/v1 --key="$(EVIDENCE_PRIVATE_KEY)" --key-alias=$(APPTRUST_EVIDENCE_KEY_ALIAS)
+      jf evd create --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber) --predicate=build-provenance.json --predicate-type=https://jfrog.com/evidence/build-provenance/v1 --key=evidence.key --key-alias=$(APPTRUST_EVIDENCE_KEY_ALIAS)
 
 - script: |
     cat > app-release-notes.json <<EOF
@@ -223,4 +233,8 @@ steps:
   inputs:
     jfrogPlatformConnection: 'mpate-solenglatest-platform'
     command: |
-      jf evd create --application-key=$(APPTRUST_APP_KEY) --application-version=$(APPTRUST_VERSION) --predicate=app-release-notes.json --predicate-type=https://jfrog.com/evidence/release-notes/v1 --key="$(EVIDENCE_PRIVATE_KEY)" --key-alias=$(APPTRUST_EVIDENCE_KEY_ALIAS)
+      jf evd create --application-key=$(APPTRUST_APP_KEY) --application-version=$(APPTRUST_VERSION) --predicate=app-release-notes.json --predicate-type=https://jfrog.com/evidence/release-notes/v1 --key=evidence.key --key-alias=$(APPTRUST_EVIDENCE_KEY_ALIAS)
+
+- script: rm -f evidence.key
+  displayName: 'Clean up evidence signing key'
+  condition: always()
