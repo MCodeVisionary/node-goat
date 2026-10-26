@@ -7,6 +7,13 @@ pool:
 variables:
   REGISTRY_URL: solenglatest.jfrog.io
   DOCKER_REPO_NAME: alpha-docker-virtual
+  APPTRUST_APP_KEY: digiportal
+  APPTRUST_EVIDENCE_KEY_ALIAS: digiportal-evidence-key
+  # true: a same-day rerun always bumps only the patch digit, regardless of
+  #       what changed (major/minor only apply to the first version of a new day).
+  # false: major/minor is evaluated on every run from the change count alone;
+  #        patch only happens when neither module changed.
+  APPTRUST_SAME_DAY_PATCH_PRIORITY: 'true'
 
 steps:
 - task: NodeTool@0
@@ -98,42 +105,121 @@ steps:
     buildName: '$(Build.DefinitionName)'
     buildNumber: '$(Build.BuildNumber)'
 
+# --- AppTrust: application version + evidence -------------------------------
+#
+# Versioning policy (x.y.z):
+#   - Compares this run's npm package.json version and Dockerfile base image
+#     tag against the values stamped on digiportal's last application version
+#     (encoded in its --tag as npm-<ver>_docker-<tag>).
+#   - APPTRUST_SAME_DAY_PATCH_PRIORITY=true (default): if the last version was
+#     created today (UTC), always bump patch only, regardless of what changed.
+#     Otherwise (first version of a new day): both npm+docker changed -> major;
+#     exactly one changed -> minor; neither changed -> patch (fallback, a
+#     version is always created).
+#   - APPTRUST_SAME_DAY_PATCH_PRIORITY=false: same-day is ignored; major/minor
+#     is decided purely from the change count on every run.
 
-# - bash: |
-#     # Using printf ensures no extra characters are added to the stream
-#     printf "%s" "$JF_EVD_PRIVATE_KEY_SECRET" | base64 --decode > evidence.key
-    
-#     # Basic sanity check to ensure the file is PEM formatted
-#     if grep -q "BEGIN" evidence.key; then
-#       echo "✅ Key restored successfully in PEM format."
-#       chmod 600 evidence.key
-#     else
-#       echo "❌ Error: Restored file is not a valid PEM key."
-#       exit 1
-#     fi
-#   env:
-#     # Map the secret variable to an env var for the script
-#     JF_EVD_PRIVATE_KEY_SECRET: $(JF_EVD_PRIVATE_KEY)
-#   displayName: "Restore JFrog Evidence private key"
+- script: |
+    set -e
+    echo "$(oidc_token)" | jf c add apptrust-ci --url="https://$(REGISTRY_URL)" --interactive=false --access-token-stdin
+    jf c use apptrust-ci
 
-# - bash: |
-#     cat > sign.json <<EOF
-#     {
-#       "actor": "$(Build.RequestedFor)",
-#       "pipeline": "$(Build.DefinitionName)",
-#       "buildNumber": "$(Build.BuildNumber)",
-#       "commit": "$(Build.SourceVersion)",
-#       "repo": "$(Build.Repository.Name)",
-#       "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-#     }
-#     EOF
+    CURRENT_NPM_VERSION=$(jq -r .version package.json)
+    CURRENT_DOCKER_TAG=$(grep -m1 '^FROM' Dockerfile | sed -E 's#.*/node:([A-Za-z0-9.-]+)$#\1#')
+    TODAY=$(date -u +%Y-%m-%d)
 
-#     cat ./sign.json
-#   displayName: 'Create build signature payload'
+    QUERY='{"query":"{ applications { getApplication(key: \"$(APPTRUST_APP_KEY)\") { versionsConnection(first: 50) { edges { node { version tag createdAt @dateFormat(format: ISO8601_DATE_ONLY) } } } } } }"}'
+    jf api "/onemodel/api/v1/graphql" -X POST -H "Content-Type: application/json" -d "$QUERY" > apptrust-versions.json
 
-# - task: JfrogCliV2@1
-#   displayName: 'Sign build evidence'
-#   inputs:
-#     jfrogPlatformConnection: 'mpatel-platform-v2'
-#     command: >
-#       jf evd create --build-name "$(Build.DefinitionName)" --build-number "$(Build.BuildNumber)" --predicate ./sign.json --predicate-type https://jfrog.com/evidence/build-signature/v1 --key ./evidence.key --key-alias evd-signing-mpatel-ado
+    LATEST=$(jq -c '(.data.applications.getApplication.versionsConnection.edges // []) | map(.node) | sort_by(.createdAt) | last // null' apptrust-versions.json)
+
+    if [ "$LATEST" = "null" ]; then
+      NEW_VERSION="1.0.0"
+    else
+      LAST_VERSION=$(echo "$LATEST" | jq -r '.version')
+      LAST_TAG=$(echo "$LATEST" | jq -r '.tag // ""')
+      LAST_DAY=$(echo "$LATEST" | jq -r '.createdAt')
+
+      LAST_NPM=$(echo "$LAST_TAG" | sed -E 's/^npm-(.*)_docker-.*/\1/')
+      LAST_DOCKER=$(echo "$LAST_TAG" | sed -E 's/.*_docker-(.*)$/\1/')
+
+      MAJOR=$(echo "$LAST_VERSION" | cut -d. -f1)
+      MINOR=$(echo "$LAST_VERSION" | cut -d. -f2)
+      PATCH=$(echo "$LAST_VERSION" | cut -d. -f3)
+
+      CHANGED=0
+      [ "$CURRENT_NPM_VERSION" != "$LAST_NPM" ] && CHANGED=$((CHANGED+1))
+      [ "$CURRENT_DOCKER_TAG" != "$LAST_DOCKER" ] && CHANGED=$((CHANGED+1))
+
+      PRIORITY_FLAG=$(echo "$(APPTRUST_SAME_DAY_PATCH_PRIORITY)" | tr '[:upper:]' '[:lower:]')
+      if [ "$PRIORITY_FLAG" = "true" ] && [ "$LAST_DAY" = "$TODAY" ]; then
+        BUMP=patch
+      elif [ "$CHANGED" -ge 2 ]; then
+        BUMP=major
+      elif [ "$CHANGED" -eq 1 ]; then
+        BUMP=minor
+      else
+        BUMP=patch
+      fi
+
+      case "$BUMP" in
+        major) NEW_VERSION="$((MAJOR+1)).0.0" ;;
+        minor) NEW_VERSION="${MAJOR}.$((MINOR+1)).0" ;;
+        patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))" ;;
+      esac
+    fi
+
+    NEW_TAG="npm-${CURRENT_NPM_VERSION}_docker-${CURRENT_DOCKER_TAG}"
+    echo "digiportal version: $NEW_VERSION (tag: $NEW_TAG)"
+    echo "##vso[task.setvariable variable=APPTRUST_VERSION]$NEW_VERSION"
+    echo "##vso[task.setvariable variable=APPTRUST_TAG]$NEW_TAG"
+
+    jf c remove apptrust-ci --quiet
+  displayName: 'Compute digiportal application version'
+
+- task: JfrogCliV2@1
+  displayName: 'Create digiportal application version'
+  inputs:
+    jfrogPlatformConnection: 'mpate-solenglatest-platform'
+    command: |
+      jf apptrust version-create $(APPTRUST_APP_KEY) $(APPTRUST_VERSION) --source-type-builds="name=$(Build.DefinitionName), id=$(Build.BuildNumber)" --tag=$(APPTRUST_TAG)
+
+- script: |
+    cat > build-provenance.json <<EOF
+    {
+      "actor": "$(Build.RequestedFor)",
+      "pipeline": "$(Build.DefinitionName)",
+      "buildNumber": "$(Build.BuildNumber)",
+      "commit": "$(Build.SourceVersion)",
+      "repo": "$(Build.Repository.Name)",
+      "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    }
+    EOF
+  displayName: 'Prepare build provenance predicate'
+
+- task: JfrogCliV2@1
+  displayName: 'Attach build-level evidence'
+  inputs:
+    jfrogPlatformConnection: 'mpate-solenglatest-platform'
+    command: |
+      jf evd create --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber) --predicate=build-provenance.json --predicate-type=https://jfrog.com/evidence/build-provenance/v1 --key="$(EVIDENCE_PRIVATE_KEY)" --key-alias=$(APPTRUST_EVIDENCE_KEY_ALIAS)
+
+- script: |
+    cat > app-release-notes.json <<EOF
+    {
+      "application": "$(APPTRUST_APP_KEY)",
+      "version": "$(APPTRUST_VERSION)",
+      "buildNumber": "$(Build.BuildNumber)",
+      "commit": "$(Build.SourceVersion)",
+      "releasedBy": "$(Build.RequestedFor)",
+      "date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+    }
+    EOF
+  displayName: 'Prepare application-version release predicate'
+
+- task: JfrogCliV2@1
+  displayName: 'Attach application-version evidence'
+  inputs:
+    jfrogPlatformConnection: 'mpate-solenglatest-platform'
+    command: |
+      jf evd create --application-key=$(APPTRUST_APP_KEY) --application-version=$(APPTRUST_VERSION) --predicate=app-release-notes.json --predicate-type=https://jfrog.com/evidence/release-notes/v1 --key="$(EVIDENCE_PRIVATE_KEY)" --key-alias=$(APPTRUST_EVIDENCE_KEY_ALIAS)
