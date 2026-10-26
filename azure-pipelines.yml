@@ -121,6 +121,7 @@ steps:
 
 - script: |
     set -e
+    curl -fL https://install-cli.jfrog.io | sh
     echo "$(oidc_token)" | jf c add apptrust-ci --url="https://$(REGISTRY_URL)" --interactive=false --access-token-stdin
     jf c use apptrust-ci
 
