@@ -61,19 +61,39 @@ steps:
   displayName: 'Prepare npmrc secret for Docker build'
 
 - task: JfrogCliV2@1
-  displayName: 'Docker build and Publish'
+  displayName: 'Docker build'
   inputs:
     jfrogPlatformConnection: 'mpate-solenglatest-platform'
     command: |
       jf docker login $(REGISTRY_URL)
-      jf docker image build --secret id=npmrc,src=npmrc.secret --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --module docker-build --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) .
-      jf docker push $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) --build-name=$(Build.DefinitionName) --build-number=$(Build.BuildNumber)
-      jf rt bce $(Build.DefinitionName) $(Build.BuildNumber)
-      jf rt bag $(Build.DefinitionName) $(Build.BuildNumber)
+      jf docker image build --secret id=npmrc,src=npmrc.secret --build-arg REGISTRY_URL=$(REGISTRY_URL) --build-arg DOCKER_REPO_NAME=$(DOCKER_REPO_NAME) --tag $(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber) .
 
 - script: rm -f npmrc.secret
   displayName: 'Clean up npmrc secret'
   condition: always()
+
+# A raw "jf docker push" inside a generic JfrogCliV2 command block doesn't
+# join the same shared build-info collection that JFrogNpm@1 uses (that's
+# why the image pushed fine but never showed up as a module in build-info,
+# so AppTrust's version-create never saw it either). JFrogDocker@1 is the
+# dedicated task that hooks into that mechanism, same as JFrogNpm@1 does.
+- task: JFrogDocker@1
+  displayName: 'Docker push'
+  inputs:
+    command: 'Push'
+    artifactoryConnection: 'mpate-solenglatest-rt'
+    imageName: '$(REGISTRY_URL)/$(DOCKER_REPO_NAME)/node-goat:$(Build.BuildNumber)'
+    collectBuildInfo: true
+    buildName: '$(Build.DefinitionName)'
+    buildNumber: '$(Build.BuildNumber)'
+    includeEnvVars: true
+
+- task: JfrogCliV2@1
+  displayName: 'Collect build VCS info'
+  inputs:
+    jfrogPlatformConnection: 'mpate-solenglatest-platform'
+    command: |
+      jf rt bag $(Build.DefinitionName) $(Build.BuildNumber)
 
 
 
@@ -88,16 +108,6 @@ steps:
 #     buildNumber: '$(Build.BuildNumber)'
 #     allowFailBuild: false
 #     vuln: true
-
-# - task: JFrogDocker@1
-#   inputs:
-#     command: 'Push'
-#     artifactoryConnection: 'mpatel-artifactory-v2'
-#     imageName: 'soleng.jfrog.io/alpha-docker-virtual/node-goat:$(Build.BuildId)'
-#     collectBuildInfo: true
-#     buildName: '$(Build.DefinitionName)'
-#     buildNumber: '$(Build.BuildNumber)'
-#     includeEnvVars: true
 
 - task: JFrogPublishBuildInfo@1
   inputs:
