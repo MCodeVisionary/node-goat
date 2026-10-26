@@ -203,10 +203,16 @@ steps:
 # command block is parsed line-by-line, so a multi-line secret substituted
 # inline there gets split across "lines" and truncated. Restore the real
 # PEM to a file here instead, then reference that file by path.
+#
+# ADO secret pipeline variables are NOT expanded via $(Name) macro syntax in
+# a script body - they must be bound through env: and read as a shell env
+# var, otherwise $(EVIDENCE_PRIVATE_KEY) is left unexpanded/empty.
 - script: |
-    echo "$(EVIDENCE_PRIVATE_KEY)" | base64 --decode > evidence.key
+    echo "$EVIDENCE_PRIVATE_KEY_B64" | base64 --decode > evidence.key
     chmod 600 evidence.key
   displayName: 'Restore evidence signing key'
+  env:
+    EVIDENCE_PRIVATE_KEY_B64: $(EVIDENCE_PRIVATE_KEY)
 
 - task: JfrogCliV2@1
   displayName: 'Attach build-level evidence'
