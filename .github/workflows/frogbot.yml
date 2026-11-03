@@ -32,4 +32,4 @@ jobs:
           JF_GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JF_GIT_BASE_BRANCH: ${{ matrix.branch }}
         with:
-         oidc-provider-name: mpatel-jfrog-githuboidc
+         oidc-provider-name: github-docportal
